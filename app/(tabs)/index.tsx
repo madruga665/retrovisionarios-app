@@ -5,7 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useEffect, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import '../../global.css';
 
@@ -27,6 +27,37 @@ export default function HomeScreen() {
     } catch (error) {
       console.error('Erro ao buscar eventos:', error);
     }
+  }
+
+  async function handleDeleteEvent(id: number) {
+    Alert.alert('Deletar Evento', 'Tem certeza que deseja deletar este evento?', [
+      {
+        text: 'Cancelar',
+        style: 'cancel',
+      },
+      {
+        text: 'Deletar',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            const response = await fetchAdapter({
+              url: `/events/${id}`,
+              options: { method: 'DELETE' },
+            });
+
+            if (response.error) {
+              Alert.alert('Erro', 'Não foi possível deletar o evento.');
+              return;
+            }
+
+            getAllEvents();
+          } catch (error) {
+            console.error('Erro ao deletar evento:', error);
+            Alert.alert('Erro', 'Ocorreu um erro ao tentar deletar o evento.');
+          }
+        },
+      },
+    ]);
   }
 
   const filteredEvents = data?.filter((event) =>
@@ -88,8 +119,9 @@ export default function HomeScreen() {
               name={item.name}
               date={formatDate(item.date)}
               flyer={item.flyer}
+              deleted={item.deleted}
               onEdit={() => console.log('Editar', item.id)}
-              onDelete={() => console.log('Deletar', item.id)}
+              onDelete={() => handleDeleteEvent(item.id)}
             />
           </View>
         )}
