@@ -1,98 +1,119 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { fetchAdapter } from '@/adapters/fetchAdapter';
+import { EventCard } from '@/components/event-card';
+import { Event, EventResponse } from '@/types/events';
+import { MaterialIcons } from '@expo/vector-icons';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { useEffect, useState } from 'react';
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import '../../global.css';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const [data, setData] = useState<Event[] | null>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const date = new Date();
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  async function getAllEvents() {
+    const requestOptions = { method: 'GET' };
+
+    try {
+      const response = await fetchAdapter<EventResponse>({
+        url: '/events',
+        options: requestOptions,
+      });
+      setData(response.data?.result ?? []);
+    } catch (error) {
+      console.error('Erro ao buscar eventos:', error);
+    }
+  }
+
+  const filteredEvents = data?.filter((event) =>
+    event.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  function formatDate(date: string) {
+    try {
+      return format(date, 'dd MMM, yyyy', { locale: ptBR });
+    } catch (e) {
+      return date;
+    }
+  }
+
+  useEffect(() => {
+    getAllEvents();
+  }, []);
+
+  return (
+    <SafeAreaView className="flex-1 bg-black">
+      <FlatList
+        data={filteredEvents}
+        contentContainerStyle={styles.listContainer}
+        keyExtractor={(item) => item.id.toString()}
+        ListHeaderComponent={
+          <View className="py-8 px-5 gap-y-6">
+            <View>
+              <Text className="text-3xl text-white font-bold tracking-tight">
+                Próximos <Text className="text-primary neon-glow">Eventos</Text>
+              </Text>
+              <View className="h-1 w-12 bg-primary mt-2 rounded-full" />
+              <Text className="text-slate-400 text-sm mt-2">
+                Gerencie a agenda da turnê {date.getFullYear()}
+              </Text>
+            </View>
+
+            {/* Input de Busca */}
+            <View className="relative">
+              <View className="absolute left-3 top-[14px] z-10">
+                <MaterialIcons name="search" size={20} color={isFocused ? '#ff8c00' : '#94a3b8'} />
+              </View>
+              <TextInput
+                className={`w-full bg-zinc-900 border ${
+                  isFocused ? 'border-primary/50' : 'border-primary/20'
+                } rounded-xl py-3 pl-11 pr-4 text-sm text-white`}
+                placeholder="Buscar shows ou locais..."
+                placeholderTextColor="#94a3b8"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+              />
+            </View>
+          </View>
+        }
+        renderItem={({ item }) => (
+          <View className="px-5">
+            <EventCard
+              name={item.name}
+              date={formatDate(item.date)}
+              flyer={item.flyer}
+              onEdit={() => console.log('Editar', item.id)}
+              onDelete={() => console.log('Deletar', item.id)}
+            />
+          </View>
+        )}
+        ListFooterComponent={
+          <View className="px-5 pt-4 pb-12">
+            <Pressable
+              className="bg-primary/5 border-2 border-dashed border-primary/30 rounded-2xl p-10 items-center justify-center active:bg-primary/20 transition-all"
+              onPress={() => console.log('Novo evento')}
+            >
+              <MaterialIcons name="add-circle" size={48} color="#ff8c00" />
+              <Text className="text-primary font-bold text-xs uppercase tracking-[3px] mt-3">
+                Novo Evento
+              </Text>
+            </Pressable>
+          </View>
+        }
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  listContainer: {
+    paddingBottom: 20,
+    gap: 20,
   },
 });
