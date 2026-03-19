@@ -7,7 +7,7 @@ interface EventCardProps {
   name: string;
   date: string;
   flyer: string | null;
-  deleted?: boolean;
+  deleted: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
 }

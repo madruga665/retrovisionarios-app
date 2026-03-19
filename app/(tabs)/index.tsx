@@ -20,7 +20,7 @@ export default function HomeScreen() {
 
     try {
       const response = await fetchAdapter<EventResponse>({
-        url: '/events',
+        url: '/events?deleted=true',
         options: requestOptions,
       });
       setData(response.data?.result ?? []);
