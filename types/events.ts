@@ -4,6 +4,7 @@ export type Event = {
   date: string;
   flyer: string | null;
   location: string;
+  deleted: boolean;
 };
 
 export type EventResponse = {

@@ -7,11 +7,12 @@ interface EventCardProps {
   name: string;
   date: string;
   flyer: string | null;
+  deleted: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
 }
 
-export function EventCard({ name, date, flyer, onEdit, onDelete }: EventCardProps) {
+export function EventCard({ name, date, flyer, deleted, onEdit, onDelete }: EventCardProps) {
   const imageUrl =
     flyer ||
     'https://lh3.googleusercontent.com/aida-public/AB6AXuDJorlCvEvMoW8MTCYrsp_iyd6CHoOdmAClM6PeoU_k0EHdw1bYZ6UlKoJgqnXacPhSTBhzdnTLxOmJ33_m9P63w0PYwESWFkOkd5S_WtTNmn4Cpbd3qtx9NkKOGTGPvrtWnp2uW7aa4Bjp7IhfcHBsr2cXJ9FRsJWT6MewaFXgoRUnKa5kYuJKXfhIzyvLp1oLUIxZ6aK53meZHRs7JbQalU9YQns1kLh4unkatvggb-2OOJYscKdKDTu86g6idU01rUoC6HgclCE';
@@ -48,11 +49,16 @@ export function EventCard({ name, date, flyer, onEdit, onDelete }: EventCardProp
           </Pressable>
 
           <Pressable
+            disabled={deleted}
             onPress={onDelete}
-            className="flex-1 flex-row items-center justify-center gap-2 bg-zinc-800 py-3 rounded-lg active:bg-red-900/20"
+            className={`flex-1 flex-row items-center justify-center gap-2 py-3 rounded-lg ${
+              deleted ? 'bg-zinc-700/50' : 'bg-zinc-800 active:bg-red-900/20'
+            }`}
           >
-            <MaterialIcons name="delete" size={18} color="#94a3b8" />
-            <Text className="text-slate-300 font-bold text-sm">Deletar</Text>
+            <MaterialIcons name="delete" size={18} color={deleted ? '#64748b' : '#94a3b8'} />
+            <Text className={`${deleted ? 'text-slate-500' : 'text-slate-300'} font-bold text-sm`}>
+              {deleted ? 'Deletado' : 'Deletar'}
+            </Text>
           </Pressable>
         </View>
       </View>
