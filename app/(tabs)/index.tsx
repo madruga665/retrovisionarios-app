@@ -2,8 +2,9 @@ import { fetchAdapter } from '@/adapters/fetchAdapter';
 import { EventCard } from '@/components/event-card';
 import { Event, EventResponse } from '@/types/events';
 import { MaterialIcons } from '@expo/vector-icons';
-import { format } from 'date-fns';
+import { compareAsc, compareDesc, format, isSameMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
@@ -17,11 +18,34 @@ import {
 } from 'react-native';
 import '../../global.css';
 
+function Separator({ data, index }: { data: Event[] | null; index: number }) {
+  const previusData = data?.[index - 1];
+  const currentData = data?.[index];
+  const hasPreviousAndCurrentData = currentData && previusData;
+  const formatedDate = format(data?.[index].date!, 'MMMM - yyyy  ', { locale: ptBR });
+
+  if (!data) {
+    return;
+  }
+
+  return (
+    <View className="flex-row items-center justify-center my-4">
+      {!previusData && <Text className="text-white text-[1.6rem]">{formatedDate}</Text>}
+      {hasPreviousAndCurrentData &&
+        !isSameMonth(new Date(data[index - 1].date), new Date(data[index].date)) && (
+          <Text className="text-white text-[1.6rem]">{formatedDate}</Text>
+        )}
+    </View>
+  );
+}
+
 export default function HomeScreen() {
   const [data, setData] = useState<Event[] | null>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [orderEvent, setOrderEvent] = useState(false);
+  const router = useRouter();
   const date = new Date();
 
   async function getAllEvents() {
@@ -33,6 +57,7 @@ export default function HomeScreen() {
         url: '/events?deleted=true',
         options: requestOptions,
       });
+
       setData(response.data?.result ?? []);
     } catch (error) {
       console.error('Erro ao buscar eventos:', error);
@@ -41,39 +66,59 @@ export default function HomeScreen() {
     }
   }
 
+  function handleOrderEvents() {
+    setOrderEvent(!orderEvent);
+
+    if (orderEvent) {
+      const sortedEvents = data?.sort((a, b) => compareDesc(new Date(a.date), new Date(b.date)));
+
+      setData(sortedEvents || []);
+    } else {
+      const sortedEvents = data?.sort((a, b) => compareAsc(new Date(a.date), new Date(b.date)));
+      setData(sortedEvents || []);
+    }
+  }
+
   const onRefresh = useCallback(async () => {
     await getAllEvents();
   }, [data]);
 
   async function handleDeleteEvent(id: number) {
-    Alert.alert('Deletar Evento', 'Tem certeza que deseja deletar este evento?', [
-      {
-        text: 'Cancelar',
-        style: 'cancel',
-      },
-      {
-        text: 'Deletar',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            const response = await fetchAdapter({
-              url: `/events/${id}`,
-              options: { method: 'DELETE' },
-            });
-
-            if (response.error) {
-              Alert.alert('Erro', 'Não foi possível deletar o evento.');
-              return;
-            }
-
-            getAllEvents();
-          } catch (error) {
-            console.error('Erro ao deletar evento:', error);
-            Alert.alert('Erro', 'Ocorreu um erro ao tentar deletar o evento.');
-          }
+    Alert.alert(
+      'Deletar Evento',
+      'Tem certeza que deseja deletar este evento?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
         },
-      },
-    ]);
+        {
+          text: 'Deletar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const response = await fetchAdapter({
+                url: `/events/${id}`,
+                options: { method: 'DELETE' },
+              });
+
+              if (response.error) {
+                Alert.alert('Erro', 'Não foi possível deletar o evento.');
+                return;
+              }
+
+              Alert.alert('Evento deletado com sucesso');
+
+              getAllEvents();
+            } catch (error) {
+              console.error('Erro ao deletar evento:', error);
+              Alert.alert('Erro', 'Ocorreu um erro ao tentar deletar o evento.');
+            }
+          },
+        },
+      ],
+      { userInterfaceStyle: 'dark' },
+    );
   }
 
   const filteredEvents = data?.filter((event) =>
@@ -81,11 +126,9 @@ export default function HomeScreen() {
   );
 
   function formatDate(date: string) {
-    try {
-      return format(date, 'dd MMM, yyyy', { locale: ptBR });
-    } catch (e) {
-      return date;
-    }
+    const formatedDate = format(date, 'dd MMM - yyyy ', { locale: ptBR });
+
+    return formatedDate;
   }
 
   useEffect(() => {
@@ -112,7 +155,7 @@ export default function HomeScreen() {
 
           {/* Input de Busca */}
           <View className="relative">
-            <View className="absolute left-3 top-[14px] z-10">
+            <View className="absolute left-3 top-[10px] z-10">
               <MaterialIcons name="search" size={20} color={isFocused ? '#ff8c00' : '#94a3b8'} />
             </View>
             <TextInput
@@ -127,10 +170,23 @@ export default function HomeScreen() {
               onBlur={() => setIsFocused(false)}
             />
           </View>
+
+          <Pressable
+            onPress={handleOrderEvents}
+            className="flex-1 flex-row items-center justify-center gap-2 bg-primary py-3 rounded-lg shadow-lg shadow-primary/20 active:opacity-80"
+          >
+            <Text className="text-white font-bold text-sm">Ordernar</Text>
+            {orderEvent ? (
+              <MaterialIcons name="arrow-downward" size={18} color="white" />
+            ) : (
+              <MaterialIcons name="arrow-upward" size={18} color="white" />
+            )}
+          </Pressable>
         </View>
       }
-      renderItem={({ item }) => (
-        <View className="px-5">
+      renderItem={({ item, index }) => (
+        <View className="px-5 gap-2">
+          <Separator index={index} data={data} />
           <EventCard
             name={item.name}
             date={formatDate(item.date)}
@@ -145,7 +201,7 @@ export default function HomeScreen() {
         <View className="px-5 pt-4 pb-12">
           <Pressable
             className="bg-primary/5 border-2 border-dashed border-primary/30 rounded-2xl p-10 items-center justify-center active:bg-primary/20 transition-all"
-            onPress={() => console.log('Novo evento')}
+            onPress={() => router.push('/(tabs)/new-event')}
           >
             <MaterialIcons name="add-circle" size={48} color="#ff8c00" />
             <Text className="text-primary font-bold text-xs uppercase tracking-[3px] mt-3">

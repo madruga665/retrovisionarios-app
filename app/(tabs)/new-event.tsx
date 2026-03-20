@@ -9,7 +9,6 @@ import { Controller, useForm } from 'react-hook-form';
 import {
   Alert,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -21,7 +20,7 @@ import '../../global.css';
 
 export default function NewEvent() {
   const router = useRouter();
-  const [refreshing, setRefreshing] = useState(false);
+  const [refreshing] = useState(false);
   const schema = yup.object().shape({
     name: yup.string().required('O nome do evento é obrigatório'),
     date: yup.string().required('A data é obrigatória (AAAA-MM-DD)'),
@@ -66,10 +65,7 @@ export default function NewEvent() {
   }
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1"
-    >
+    <KeyboardAvoidingView behavior="height" className="flex-1">
       <ScrollView
         className="flex-1 px-6 pt-8"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -85,26 +81,21 @@ export default function NewEvent() {
         <View className="gap-y-6 pb-32">
           {/* Nome do Evento */}
           <View>
-            <Text className="text-primary text-[10px] font-bold uppercase tracking-widest mb-2 ml-1">
-              Nome do Evento
-            </Text>
-            <View className="relative">
-              <View className="absolute left-4 top-[14px] z-10">
-                <MaterialIcons name="electric-bolt" size={20} color="#94a3b8" />
-              </View>
-              <Controller
-                control={control}
-                name="name"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    onBlur={onBlur}
-                    onChange={onChange}
-                    value={value}
-                    placeholder="Ex: Noite de Sintetizadores 1985"
-                  />
-                )}
-              />
-            </View>
+            <Controller
+              control={control}
+              name="name"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label="Nome do Evento"
+                  iconName="electric-bolt"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  placeholder="Ex: Noite de Sintetizadores 1985"
+                />
+              )}
+            />
+
             {errors.name && (
               <Text className="text-red-500 text-xs mt-1 ml-1">{errors.name.message}</Text>
             )}
@@ -112,26 +103,21 @@ export default function NewEvent() {
 
           {/* Data */}
           <View>
-            <Text className="text-primary text-[10px] font-bold uppercase tracking-widest mb-2 ml-1">
-              Data do Show (AAAA-MM-DD)
-            </Text>
-            <View className="relative">
-              <View className="absolute left-4 top-[14px] z-10">
-                <MaterialIcons name="calendar-today" size={20} color="#94a3b8" />
-              </View>
-              <Controller
-                control={control}
-                name="date"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    placeholder="2024-10-25"
-                    onBlur={onBlur}
-                    onChange={onChange}
-                    value={value}
-                  />
-                )}
-              />
-            </View>
+            <Controller
+              control={control}
+              name="date"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label="Data do Show (AAAA-MM-DD HH:mm)"
+                  iconName="calendar-today"
+                  placeholder="2024-10-25 14:00"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+
             {errors.date && (
               <Text className="text-red-500 text-xs mt-1 ml-1">{errors.date.message}</Text>
             )}
@@ -139,26 +125,20 @@ export default function NewEvent() {
 
           {/* Flyer Link */}
           <View>
-            <Text className="text-primary text-[10px] font-bold uppercase tracking-widest mb-2 ml-1">
-              Link do Flyer (Imagem)
-            </Text>
-            <View className="relative">
-              <View className="absolute left-4 top-[14px] z-10">
-                <MaterialIcons name="image" size={20} color="#94a3b8" />
-              </View>
-              <Controller
-                control={control}
-                name="flyer"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    placeholder="https://exemplo.com/poster.jpg"
-                    onBlur={onBlur}
-                    onChange={onChange}
-                    value={value}
-                  />
-                )}
-              />
-            </View>
+            <Controller
+              control={control}
+              name="flyer"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label="Link do Flyer (Imagem)"
+                  iconName="image"
+                  placeholder="https://exemplo.com/poster.jpg"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
             <Text className="text-slate-500 text-[10px] italic mt-2 ml-1">
               Insira o link da arte promocional do show.
             </Text>
@@ -166,26 +146,20 @@ export default function NewEvent() {
 
           {/* Local */}
           <View>
-            <Text className="text-primary text-[10px] font-bold uppercase tracking-widest mb-2 ml-1">
-              Local (Endereço)
-            </Text>
-            <View className="relative">
-              <View className="absolute left-4 top-[14px] z-10">
-                <MaterialIcons name="location-on" size={20} color="#94a3b8" />
-              </View>
-              <Controller
-                control={control}
-                name="location"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Input
-                    placeholder="Rua Cyberpunk, 2077 - Centro"
-                    onBlur={onBlur}
-                    onChange={onChange}
-                    value={value}
-                  />
-                )}
-              />
-            </View>
+            <Controller
+              control={control}
+              name="location"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <Input
+                  label="Local (Endereço)"
+                  iconName="location-on"
+                  placeholder="Rua Cyberpunk, 2077 - Centro"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
             {errors.location && (
               <Text className="text-red-500 text-xs mt-1 ml-1">{errors.location.message}</Text>
             )}

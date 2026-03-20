@@ -24,7 +24,11 @@ export async function fetchAdapter<T>({
       },
     });
     const status = response.status;
-    const data: T = await response.json();
+    const data: T = status !== 204 ? await response.json() : null;
+
+    if (!data) {
+      return { data: null, status, error: null };
+    }
 
     if (!response.ok) {
       return {
@@ -40,7 +44,7 @@ export async function fetchAdapter<T>({
     return {
       data: null,
       status: 500,
-      error: `[fetchAdapter] - Erro ao buscar dados em ${url}: ${error}`,
+      error: `Error: ${error}`,
     };
   }
 }
