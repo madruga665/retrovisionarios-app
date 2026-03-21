@@ -1,43 +1,14 @@
 import { fetchAdapter } from '@/adapters/fetchAdapter';
 import { EventCard } from '@/components/event-card';
+import { Separator } from '@/components/separator';
 import { Event, EventResponse } from '@/types/events';
 import { MaterialIcons } from '@expo/vector-icons';
-import { compareAsc, compareDesc, format, isSameMonth } from 'date-fns';
+import { compareAsc, compareDesc, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import {
-  Alert,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Alert, FlatList, Pressable, RefreshControl, Text, TextInput, View } from 'react-native';
 import '../../global.css';
-
-function Separator({ data, index }: { data: Event[] | null; index: number }) {
-  const previusData = data?.[index - 1];
-  const currentData = data?.[index];
-  const hasPreviousAndCurrentData = currentData && previusData;
-  const formatedDate = format(data?.[index].date!, 'MMMM - yyyy  ', { locale: ptBR });
-
-  if (!data) {
-    return;
-  }
-
-  return (
-    <View className="flex-row items-center justify-center my-4">
-      {!previusData && <Text className="text-white text-[1.6rem]">{formatedDate}</Text>}
-      {hasPreviousAndCurrentData &&
-        !isSameMonth(new Date(data[index - 1].date), new Date(data[index].date)) && (
-          <Text className="text-white text-[1.6rem]">{formatedDate}</Text>
-        )}
-    </View>
-  );
-}
 
 export default function HomeScreen() {
   const [data, setData] = useState<Event[] | null>([]);
@@ -66,20 +37,21 @@ export default function HomeScreen() {
     }
   }
 
-  function handleOrderEvents() {
+  function handleSortEvents() {
     setOrderEvent(!orderEvent);
 
     if (orderEvent) {
-      const sortedEvents = data?.sort((a, b) => compareDesc(new Date(a.date), new Date(b.date)));
+      const sortedEvents = data?.sort((a, b) => compareAsc(new Date(a.date), new Date(b.date)));
 
       setData(sortedEvents || []);
     } else {
-      const sortedEvents = data?.sort((a, b) => compareAsc(new Date(a.date), new Date(b.date)));
+      const sortedEvents = data?.sort((a, b) => compareDesc(new Date(a.date), new Date(b.date)));
       setData(sortedEvents || []);
     }
   }
 
   const onRefresh = useCallback(async () => {
+    setOrderEvent(false);
     await getAllEvents();
   }, [data]);
 
@@ -137,9 +109,9 @@ export default function HomeScreen() {
 
   return (
     <FlatList
+      className="pb-5 gap-5"
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       data={filteredEvents}
-      contentContainerStyle={styles.listContainer}
       keyExtractor={(item) => item.id.toString()}
       ListHeaderComponent={
         <View className="py-8 px-5 gap-y-6">
@@ -170,18 +142,19 @@ export default function HomeScreen() {
               onBlur={() => setIsFocused(false)}
             />
           </View>
-
-          <Pressable
-            onPress={handleOrderEvents}
-            className="flex-1 flex-row items-center justify-center gap-2 bg-primary py-3 rounded-lg shadow-lg shadow-primary/20 active:opacity-80"
-          >
-            <Text className="text-white font-bold text-sm">Ordernar</Text>
-            {orderEvent ? (
-              <MaterialIcons name="arrow-downward" size={18} color="white" />
-            ) : (
-              <MaterialIcons name="arrow-upward" size={18} color="white" />
-            )}
-          </Pressable>
+          <View className="flex-row gap-x-3">
+            <Pressable
+              onPress={handleSortEvents}
+              className="flex-1 flex-row items-center justify-center gap-2 bg-primary py-3 rounded-lg shadow-lg shadow-primary/20 active:opacity-80"
+            >
+              <Text className="text-white font-bold text-sm">Ordernar</Text>
+              {orderEvent ? (
+                <MaterialIcons name="arrow-upward" size={18} color="white" />
+              ) : (
+                <MaterialIcons name="arrow-downward" size={18} color="white" />
+              )}
+            </Pressable>
+          </View>
         </View>
       }
       renderItem={({ item, index }) => (
@@ -213,10 +186,3 @@ export default function HomeScreen() {
     />
   );
 }
-
-const styles = StyleSheet.create({
-  listContainer: {
-    paddingBottom: 20,
-    gap: 20,
-  },
-});
