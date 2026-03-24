@@ -109,7 +109,7 @@ export default function HomeScreen() {
 
   return (
     <FlatList
-      className="pb-5 gap-5"
+      className="pb-5 gap-5 animate-slideInRight"
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       data={filteredEvents}
       keyExtractor={(item) => item.id.toString()}
