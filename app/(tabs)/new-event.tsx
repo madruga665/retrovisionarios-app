@@ -65,9 +65,9 @@ export default function NewEvent() {
   }
 
   return (
-    <KeyboardAvoidingView behavior="height" className="flex-1">
+    <KeyboardAvoidingView behavior="height" className="flex-1 animate-slideInRight">
       <ScrollView
-        className="flex-1 px-6 pt-8 animate-slideInRight"
+        className="flex-1 px-6 pt-8"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         {/* Progress Decoration */}
