@@ -13,15 +13,6 @@ module.exports = {
         display: ['Space Grotesk', 'sans-serif'],
       },
       borderRadius: { DEFAULT: '0.5rem', lg: '0.5rem', xl: '0.75rem', full: '9999px' },
-      keyframes: {
-        slideInRight: {
-          '0%': { transform: 'translateX(200px)', opacity: '0' },
-          '100%': { transform: 'translateX(0px)', opacity: '1' },
-        },
-      },
-      animation: {
-        slideInRight: 'slideInRight 0.35s ease-out',
-      },
     },
   },
   plugins: [],

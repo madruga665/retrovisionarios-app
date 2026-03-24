@@ -65,7 +65,7 @@ export default function NewEvent() {
   }
 
   return (
-    <KeyboardAvoidingView behavior="height" className="flex-1 animate-slideInRight">
+    <KeyboardAvoidingView behavior="height" className="flex-1">
       <ScrollView
         className="flex-1 px-6 pt-8"
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}

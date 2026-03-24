@@ -108,10 +108,9 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <View className="flex-1 animate-slideInRight">
-      <FlatList
-        className="pb-5 gap-5"
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    <FlatList
+      className="pb-5 gap-5"
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       data={filteredEvents}
       keyExtractor={(item) => item.id.toString()}
       ListHeaderComponent={
@@ -185,6 +184,5 @@ export default function HomeScreen() {
         </View>
       }
     />
-    </View>
   );
 }
