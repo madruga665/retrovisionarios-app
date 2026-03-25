@@ -1,14 +1,15 @@
 import { fetchAdapter } from '@/adapters/fetchAdapter';
 import { EventCard } from '@/components/event-card';
+import { Input } from '@/components/input';
 import { Separator } from '@/components/separator';
+import { Colors } from '@/constants/theme';
 import { Event, EventResponse } from '@/types/events';
 import { MaterialIcons } from '@expo/vector-icons';
 import { compareAsc, compareDesc, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
-import { Alert, FlatList, Pressable, RefreshControl, Text, TextInput, View } from 'react-native';
-import '../../global.css';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
 export default function HomeScreen() {
   const [data, setData] = useState<Event[] | null>([]);
@@ -98,9 +99,7 @@ export default function HomeScreen() {
   );
 
   function formatDate(date: string) {
-    const formatedDate = format(date, 'dd MMM - yyyy ', { locale: ptBR });
-
-    return formatedDate;
+    return format(new Date(date), 'dd MMM - yyyy', { locale: ptBR });
   }
 
   useEffect(() => {
@@ -109,56 +108,51 @@ export default function HomeScreen() {
 
   return (
     <FlatList
-      className="pb-5 gap-5"
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      contentContainerStyle={styles.listContent}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />
+      }
       data={filteredEvents}
       keyExtractor={(item) => item.id.toString()}
       ListHeaderComponent={
-        <View className="py-8 px-5 gap-y-6">
+        <View style={styles.header}>
           <View>
-            <Text className="text-3xl text-white font-bold tracking-tight">
-              Próximos <Text className="text-primary neon-glow">Eventos</Text>
+            <Text style={styles.title}>
+              Próximos <Text style={[styles.titleHighlight, styles.neonGlow]}>Eventos</Text>
             </Text>
-            <View className="h-1 w-12 bg-primary mt-2 rounded-full" />
-            <Text className="text-slate-400 text-sm mt-2">
-              Gerencie a agenda da turnê {date.getFullYear()}
-            </Text>
+            <View style={styles.titleUnderline} />
+            <Text style={styles.subtitle}>Gerencie a agenda da turnê {date.getFullYear()}</Text>
           </View>
 
           {/* Input de Busca */}
-          <View className="relative">
-            <View className="absolute left-3 top-[10px] z-10">
-              <MaterialIcons name="search" size={20} color={isFocused ? '#ff8c00' : '#94a3b8'} />
-            </View>
-            <TextInput
-              className={`w-full bg-zinc-900 border ${
-                isFocused ? 'border-primary/50' : 'border-primary/20'
-              } rounded-xl py-3 pl-11 pr-4 text-sm text-white`}
+          <View style={styles.searchContainer}>
+            <Input
+              iconName="search"
               placeholder="Buscar shows ou locais..."
-              placeholderTextColor="#94a3b8"
               value={searchQuery}
               onChangeText={setSearchQuery}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
             />
           </View>
-          <View className="flex-row gap-x-3">
+
+          <View style={styles.actionsContainer}>
             <Pressable
               onPress={handleSortEvents}
-              className="flex-1 flex-row items-center justify-center gap-2 bg-primary py-3 rounded-lg shadow-lg shadow-primary/20 active:opacity-80"
+              style={({ pressed }) => [styles.sortButton, pressed && styles.buttonPressed]}
             >
-              <Text className="text-white font-bold text-sm">Ordernar</Text>
-              {orderEvent ? (
-                <MaterialIcons name="arrow-upward" size={18} color="white" />
-              ) : (
-                <MaterialIcons name="arrow-downward" size={18} color="white" />
-              )}
+              <Text style={styles.sortButtonText}>Ordernar</Text>
+              <MaterialIcons
+                name={orderEvent ? 'arrow-upward' : 'arrow-downward'}
+                size={18}
+                color="white"
+              />
             </Pressable>
           </View>
         </View>
       }
       renderItem={({ item, index }) => (
-        <View className="px-5 gap-2">
+        <View style={styles.cardContainer}>
           <Separator index={index} data={data} />
           <EventCard
             name={item.name}
@@ -171,18 +165,134 @@ export default function HomeScreen() {
         </View>
       )}
       ListFooterComponent={
-        <View className="px-5 pt-4 pb-12">
+        <View style={styles.footer}>
           <Pressable
-            className="bg-primary/5 border-2 border-dashed border-primary/30 rounded-2xl p-10 items-center justify-center active:bg-primary/20 transition-all"
+            style={({ pressed }) => [
+              styles.addEventButton,
+              pressed && styles.addEventButtonPressed,
+            ]}
             onPress={() => router.push('/(tabs)/new-event')}
           >
-            <MaterialIcons name="add-circle" size={48} color="#ff8c00" />
-            <Text className="text-primary font-bold text-xs uppercase tracking-[3px] mt-3">
-              Novo Evento
-            </Text>
+            <MaterialIcons name="add-circle" size={48} color={Colors.primary} />
+            <Text style={styles.addEventText}>Novo Evento</Text>
           </Pressable>
         </View>
       }
     />
   );
 }
+
+const styles = StyleSheet.create({
+  listContent: {
+    paddingBottom: 20,
+  },
+  header: {
+    paddingTop: 32,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    gap: 24,
+  },
+  title: {
+    fontSize: 30, // text-3xl
+    color: '#ffffff',
+    fontWeight: 'bold',
+    letterSpacing: -0.5, // tracking-tight
+  },
+  titleHighlight: {
+    color: Colors.primary,
+  },
+  neonGlow: {
+    textShadowColor: 'rgba(255, 140, 0, 0.6)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
+  },
+  titleUnderline: {
+    height: 4,
+    width: 48,
+    backgroundColor: Colors.primary,
+    marginTop: 8,
+    borderRadius: 2,
+  },
+  subtitle: {
+    color: '#94a3b8', // slate-400
+    fontSize: 14,
+    marginTop: 8,
+  },
+  searchContainer: {
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  searchIcon: {
+    position: 'absolute',
+    left: 12,
+    zIndex: 10,
+  },
+  searchInput: {
+    width: '100%',
+    backgroundColor: '#18181b', // zinc-900
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingLeft: 44,
+    paddingRight: 16,
+    fontSize: 14,
+    color: '#ffffff',
+  },
+  actionsContainer: {
+    flexDirection: 'row',
+  },
+  sortButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: Colors.primary,
+    paddingVertical: 12,
+    borderRadius: 8,
+    // shadow-lg shadow-primary/20
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  buttonPressed: {
+    opacity: 0.8,
+  },
+  sortButtonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  cardContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 8,
+  },
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 48,
+  },
+  addEventButton: {
+    backgroundColor: 'rgba(255, 140, 0, 0.05)', // primary/5
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: 'rgba(255, 140, 0, 0.3)', // primary/30
+    borderRadius: 16,
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addEventButtonPressed: {
+    backgroundColor: 'rgba(255, 140, 0, 0.2)', // primary/20
+  },
+  addEventText: {
+    color: Colors.primary,
+    fontWeight: 'bold',
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 3,
+    marginTop: 12,
+  },
+});

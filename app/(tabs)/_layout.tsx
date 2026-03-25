@@ -5,7 +5,8 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Tabs, useRouter } from 'expo-router';
-import { Pressable, Text } from 'react-native';
+import React from 'react';
+import { Pressable, StyleSheet, Text } from 'react-native';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -27,7 +28,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
           header: (props) => (
             <Header {...props}>
-              <Text className="text-primary text-xl font-bold tracking-tight">
+              <Text style={styles.headerTitlePrimary}>
                 RETROVISIONÁRIOS
               </Text>
             </Header>
@@ -43,11 +44,14 @@ export default function TabLayout() {
             <Header {...props}>
               <Pressable
                 onPress={() => router.back()}
-                className="size-10 rounded-full items-center justify-center active:bg-primary/10"
+                style={({ pressed }) => [
+                  styles.backButton,
+                  pressed && styles.backButtonPressed
+                ]}
               >
-                <MaterialIcons name="arrow-back" size={24} color="#ff8c00" />
+                <MaterialIcons name="arrow-back" size={24} color={Colors.primary} />
               </Pressable>
-              <Text className="text-white text-xl font-bold tracking-tight">Criar Novo Evento</Text>
+              <Text style={styles.headerTitleWhite}>Criar Novo Evento</Text>
             </Header>
           ),
         }}
@@ -55,3 +59,28 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  headerTitlePrimary: {
+    color: Colors.primary,
+    fontSize: 20, // text-xl
+    fontWeight: 'bold',
+    letterSpacing: -0.5, // tracking-tight
+  },
+  headerTitleWhite: {
+    color: '#ffffff',
+    fontSize: 20, // text-xl
+    fontWeight: 'bold',
+    letterSpacing: -0.5, // tracking-tight
+  },
+  backButton: {
+    width: 40, // size-10
+    height: 40,
+    borderRadius: 20, // rounded-full
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backButtonPressed: {
+    backgroundColor: 'rgba(255, 140, 0, 0.1)', // active:bg-primary/10
+  },
+});
