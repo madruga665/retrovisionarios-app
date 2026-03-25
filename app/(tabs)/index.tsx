@@ -99,7 +99,7 @@ export default function HomeScreen() {
   );
 
   function formatDate(date: string) {
-    return format(new Date(date), 'dd MMM - yyyy', { locale: ptBR });
+    return format(new Date(date), 'dd MMM - yyyy ', { locale: ptBR });
   }
 
   useEffect(() => {
