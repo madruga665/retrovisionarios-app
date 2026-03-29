@@ -159,7 +159,9 @@ export default function HomeScreen() {
             date={formatDate(item.date)}
             flyer={item.flyer}
             deleted={item.deleted}
-            onEdit={() => console.log('Editar', item.id)}
+            onEdit={() => {
+              router.push(`/event/${item.id}`);
+            }}
             onDelete={() => handleDeleteEvent(item.id)}
           />
         </View>

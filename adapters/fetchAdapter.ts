@@ -34,13 +34,13 @@ export async function fetchAdapter<T>({
       return {
         data: null,
         status,
-        error: `[fetchAdapter] - Erro ao buscar dados em ${url}, status: ${status}`,
+        error: `[fetchAdapter] - Erro em ${url}, status: ${status}`,
       };
     }
 
     return { data, status, error: null };
   } catch (error) {
-    console.error(`[fetchAdapter] - Erro ao buscar dados em ${url}:`, error);
+    console.error(`[fetchAdapter] - Erro em ${url}:`, error);
     return {
       data: null,
       status: 500,
