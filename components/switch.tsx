@@ -8,8 +8,8 @@ type SwitchStyledProps = SwitchProps & {
 
 export function SwitchStyled({ enabledLabel, disabledLabel, ...props }: SwitchStyledProps) {
   return (
-    <View style={styles.switchContainer}>
-      <Text style={styles.switchText}>{props.value ? enabledLabel : disabledLabel}</Text>
+    <View style={styles.container}>
+      <Text style={styles.label}>{props.value ? enabledLabel : disabledLabel}</Text>
       <Switch
         trackColor={{ false: '#767577', true: Colors.primaryAlpha02 }}
         thumbColor={props.value ? Colors.primary : Colors.dark.icon}
@@ -21,12 +21,13 @@ export function SwitchStyled({ enabledLabel, disabledLabel, ...props }: SwitchSt
 }
 
 const styles = StyleSheet.create({
-  switchContainer: {
+  container: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 22,
   },
-  switchText: {
+  label: {
     color: '#FFFFFF',
+    paddingHorizontal: 6,
   },
 });
