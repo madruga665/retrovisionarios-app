@@ -10,11 +10,13 @@ import { ptBR } from 'date-fns/locale';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { useDebounce } from 'use-debounce';
 
 export default function HomeScreen() {
   const [data, setData] = useState<Event[] | null>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
+  const [eventName] = useDebounce(searchQuery, 1000);
+  const [_isFocused, setIsFocused] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [orderEvent, setOrderEvent] = useState(false);
   const router = useRouter();
@@ -26,7 +28,7 @@ export default function HomeScreen() {
     try {
       setRefreshing(true);
       const response = await fetchAdapter<EventResponse>({
-        url: '/events?deleted=true',
+        url: '/events?deleted=true&name=' + eventName,
         options: requestOptions,
       });
 
@@ -94,17 +96,13 @@ export default function HomeScreen() {
     );
   }
 
-  const filteredEvents = data?.filter((event) =>
-    event.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-
   function formatDate(date: string) {
     return format(new Date(date), 'dd MMM - yyyy ', { locale: ptBR });
   }
 
   useEffect(() => {
     getAllEvents();
-  }, []);
+  }, [eventName]);
 
   return (
     <FlatList
@@ -112,7 +110,7 @@ export default function HomeScreen() {
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />
       }
-      data={filteredEvents}
+      data={data}
       keyExtractor={(item) => item.id.toString()}
       ListHeaderComponent={
         <View style={styles.header}>
